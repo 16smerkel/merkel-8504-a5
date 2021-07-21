@@ -26,5 +26,5 @@ javafx {
 }
 
 application {
-    mainClass = 'ucf.assignments.App'
+    mainClass = 'ucf.assignments.InventoryManager'
 }
