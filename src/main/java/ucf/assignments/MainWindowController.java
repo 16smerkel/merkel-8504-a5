@@ -30,7 +30,7 @@ public class MainWindowController {
 
     @FXML
     private TextField itemPriceTextField;
-
+/*
 
     @FXML
     void addNewItemButtonClicked(ActionEvent event) {
@@ -52,16 +52,16 @@ public class MainWindowController {
         filetype = FileChooser.getType();
 
         if(filetype == 'CSV'){
-            saveAsCsv(flename + filetype);
+            saveAsCsv(filename + filetype);
         }
     }
 
     public void saveAsCSV(String filename){
-        /*
+     //
         open up filename
         for each item in the item model
             write the item to file as sn, name, price
         close file
-         */
-    }
+       //
+    */
 }
