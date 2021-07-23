@@ -1,6 +1,8 @@
 package ucf.assignments;
 
+import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -10,11 +12,14 @@ import javafx.scene.control.*;
 import javafx.fxml.Initializable;
 
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,9 +36,6 @@ public class InventoryManagerController implements Initializable {
     TableView<InventoryItem> table;
 
     @FXML
-    VBox vbMenu;
-
-    @FXML
     TextField price;
 
     @FXML
@@ -43,13 +45,28 @@ public class InventoryManagerController implements Initializable {
     TextField name;
 
     @FXML
+    TextField searchSerial;
+
+    @FXML
+    TextField searchName;
+
+    @FXML
+    TableColumn<InventoryItem, String> priceColumn;
+
+    @FXML
+    TableColumn<InventoryItem, String> serialColumn;
+
+    @FXML
+    TableColumn<InventoryItem, String> nameColumn;
+
+    @FXML
     FileChooser fileChooser = new FileChooser();
 
     @FXML
     private TextArea theDisplayTextArea;
 
     @FXML
-    ListView<InventoryItem> itemList;
+    VBox vbMenu;
 
     static ObservableList<InventoryItem> list = FXCollections.observableArrayList();
 
@@ -57,6 +74,7 @@ public class InventoryManagerController implements Initializable {
     public void addItem(Event e){
         // gets information from the three textfields and creates new item
         // adds item to the list
+        this.theDisplayTextArea.setText("");
         int noSerialFound = 0;
         noSerialFound = searchForSerial(list, serial.getText());
         int serialFormatCheck = 0;
@@ -67,60 +85,509 @@ public class InventoryManagerController implements Initializable {
         fixedPrice = makeDollar(fixedPrice);
         String errorMessage = "";
         if(noSerialFound == 2) {
-            errorMessage += ("SERIAL NUMBER ALREADY IN LIST! TRY ANOTHER SERIAL NUMBER!!!\n");
+            errorMessage += ("SERIAL NUMBER ALREADY IN LIST! \nTRY ANOTHER SERIAL NUMBER!!!\n");
         }
-        else if(noSerialFound == 2 && serialFormatCheck == 2) {
-            errorMessage += ("SERIAL NUMBER IS NOT IN XXXXXXXXXX FORMAT! TRY A DIFFERENT FORMAT!!!\n");
+        else if(serialFormatCheck == 2) {
+            errorMessage += ("SERIAL NUMBER IS NOT IN XXXXXXXXXX FORMAT! \nTRY A DIFFERENT FORMAT!!!\n");
         }
         else if(nameLengthCheck == 2) {
-            errorMessage += ("NAME LENGTH IS NOT BETWEEN 2 AND 256 CHARACTERS! TRY ANOTHER NAME!!!");
+            errorMessage += ("NAME LENGTH IS NOT BETWEEN 2 AND 256 CHARACTERS! \nTRY ANOTHER NAME!!!\n");
         }
         if(noSerialFound == 2 || serialFormatCheck == 2 || nameLengthCheck == 2) {
-           // this.theDisplayTextArea.setText(errorMessage);
+            this.theDisplayTextArea.setText(errorMessage);
         }
         else
         {
             InventoryItem theItem = new InventoryItem(fixedPrice, serial.getText(), name.getText());
             list.add(theItem);
-            itemList.setItems(list); // prints the item
-           //this.theDisplayTextArea.setText("");
+            this.theDisplayTextArea.setText("");
         }
         refresh();
     }
 
-    public int searchForSerial(ObservableList<InventoryItem> list, String theSerial){
-        if(list.contains(theSerial))
+    @FXML
+    public void deleteItem(Event e){
+        // removes the selected item from list
+        this.theDisplayTextArea.setText("");
+        ObservableList<InventoryItem> InventoryItemSelected, allInventoryItems;
+        allInventoryItems = table.getItems();
+        InventoryItemSelected = table.getSelectionModel().getSelectedItems();
+        for(InventoryItem p : InventoryItemSelected)
         {
-            return 1;
+            allInventoryItems.remove(p);
+        }
+    }
+
+    @FXML
+    public void editItem(Event E){
+        // gets information from the three textfields (whichever ones were filled out) and edits chosen item
+        this.theDisplayTextArea.setText("");
+        ObservableList<InventoryItem> allInventoryItems;
+        allInventoryItems = table.getItems();
+        InventoryItem Selected = table.getSelectionModel().getSelectedItem();
+        InventoryItem theItem = new InventoryItem();
+        int noSerialFound = 0;
+        noSerialFound = searchForSerial(list, serial.getText());
+        int serialFormatCheck = 0;
+        serialFormatCheck = checkSerialFormat(serial.getText());
+        int nameLengthCheck = 0;
+        nameLengthCheck = checkNameLength(name.getText());
+        String fixedPrice = price.getText();
+        fixedPrice = makeDollar(fixedPrice);
+        String errorMessage = "";
+        if(noSerialFound == 2) {
+            errorMessage += ("SERIAL NUMBER ALREADY IN LIST! \nTRY ANOTHER SERIAL NUMBER!!!\n");
+        }
+        else if(serialFormatCheck == 2) {
+            errorMessage += ("SERIAL NUMBER IS NOT IN XXXXXXXXXX FORMAT! \nTRY A DIFFERENT FORMAT!!!\n");
+        }
+        else if(nameLengthCheck == 2 && !(name.getText().equals(""))) {
+            errorMessage += ("NAME LENGTH IS NOT BETWEEN 2 AND 256 CHARACTERS! \nTRY ANOTHER NAME!!!\n");
+        }
+        if(noSerialFound == 2 || serialFormatCheck == 2 || nameLengthCheck == 2) {
+            this.theDisplayTextArea.setText(errorMessage);
+        }
+        if(noSerialFound == 2)
+        {
+            this.theDisplayTextArea.setText("SERIAL NUMBER ALREADY IN LIST! \nTRY ANOTHER SERIAL NUMBER!!!\n");
         }
         else
         {
-            return 2;
+            if (price.getText().equals("")) {
+                theItem.setThePrice(Selected.thePrice.get());
+            }
+            else {
+                theItem.setThePrice(fixedPrice);
+            }
+            if (serial.getText().equals("")) {
+                theItem.setTheSerial(Selected.theSerial.get());
+            }
+            else {
+                theItem.setTheSerial(serial.getText());
+            }
+            if (name.getText().equals("")) {
+                theItem.setTheName(Selected.theName.get());
+            }
+            else {
+                theItem.setTheName(name.getText());
+            }
+            allInventoryItems.remove(Selected);
+            list.add(theItem);
         }
+        //table.getItems().add(theItem);
+        refresh();
+    }
+
+    @FXML
+    public void editItemPrice(Event E){
+        // gets information from the three textfields (whichever ones were filled out) and edits chosen item
+        this.theDisplayTextArea.setText("");
+        ObservableList<InventoryItem> allInventoryItems;
+        allInventoryItems = table.getItems();
+        InventoryItem Selected = table.getSelectionModel().getSelectedItem();
+        InventoryItem theItem = new InventoryItem();
+        String fixedPrice = price.getText();
+        fixedPrice = makeDollar(fixedPrice);
+        theItem.setThePrice(fixedPrice);
+        theItem.setTheSerial(Selected.theSerial.get());
+        theItem.setTheName(Selected.theName.get());
+        allInventoryItems.remove(Selected);
+        list.add(theItem);
+        refresh();
+    }
+
+    @FXML
+    public void editItemSerial(Event E){
+        // gets information from the three textfields (whichever ones were filled out) and edits chosen item
+        this.theDisplayTextArea.setText("");
+        ObservableList<InventoryItem> allInventoryItems;
+        allInventoryItems = table.getItems();
+        InventoryItem Selected = table.getSelectionModel().getSelectedItem();
+        InventoryItem theItem = new InventoryItem();
+        int noSerialFound = 0;
+        noSerialFound = searchForSerial(list, serial.getText());
+        int serialFormatCheck = 0;
+        serialFormatCheck = checkSerialFormat(serial.getText());
+        String errorMessage = "";
+        if(serialFormatCheck == 2) {
+            errorMessage += ("SERIAL NUMBER IS NOT IN XXXXXXXXXX FORMAT! \nTRY A DIFFERENT FORMAT!!!\n");
+        }
+        else if(noSerialFound == 2) {
+            errorMessage += ("SERIAL NUMBER ALREADY IN LIST! \nTRY ANOTHER SERIAL NUMBER!!!\n");
+        }
+        if(noSerialFound == 2 || serialFormatCheck == 2) {
+            this.theDisplayTextArea.setText(errorMessage);
+        }
+        else
+        {
+            theItem.setTheSerial(serial.getText());
+            theItem.setThePrice(Selected.thePrice.get());
+            theItem.setTheName(Selected.theName.get());
+            allInventoryItems.remove(Selected);
+            list.add(theItem);
+        }
+        refresh();
+    }
+
+    @FXML
+    public void editItemName(Event E){
+        // gets information from the three textfields (whichever ones were filled out) and edits chosen item
+        this.theDisplayTextArea.setText("");
+        ObservableList<InventoryItem> allInventoryItems;
+        allInventoryItems = table.getItems();
+        InventoryItem Selected = table.getSelectionModel().getSelectedItem();
+        InventoryItem theItem = new InventoryItem();
+        int nameLengthCheck = 0;
+        nameLengthCheck = checkNameLength(name.getText());
+        String errorMessage = "";
+        if(nameLengthCheck == 2) {
+            errorMessage += ("NAME LENGTH IS NOT BETWEEN 2 AND 256 CHARACTERS! \nTRY ANOTHER NAME!!!\n");
+            this.theDisplayTextArea.setText(errorMessage);
+        }
+        else
+        {
+            theItem.setThePrice(Selected.thePrice.get());
+            theItem.setTheSerial(Selected.theSerial.get());
+            theItem.setTheName(name.getText());
+            allInventoryItems.remove(Selected);
+            list.add(theItem);
+        }
+        refresh();
+    }
+
+    @FXML
+    public void sortPrice(Event e)
+    {
+        int i,j;
+        for(i = 0; i < list.size() - 1; i++)
+        {
+            for(j = i + 1; j < list.size(); j++)
+            {
+                String jItem = list.get(j).getThePrice();
+                String iItem = list.get(i).getThePrice();
+                jItem = jItem.replace("$","");
+                iItem = iItem.replace("$","");
+                double jNum = Double.parseDouble(jItem);
+                double iNum = Double.parseDouble(iItem);
+                if (jNum > iNum) {
+                    InventoryItem temp = list.get(i);
+                    list.set(i, list.get(j));
+                    list.set(j, temp);
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void sortSerial(Event e)
+    {
+        int i,j;
+        for(i = 0; i < list.size() - 1; i++)
+        {
+            for(j = i + 1; j < list.size(); j++)
+            {
+                String jItem = list.get(j).getTheSerial();
+                String iItem = list.get(i).getTheSerial();
+                if (jItem.compareTo(iItem) < 0) {
+                    InventoryItem temp = list.get(i);
+                    list.set(i, list.get(j));
+                    list.set(j, temp);
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void sortName(Event e)
+    {
+        int i,j;
+        for(i = 0; i < list.size() - 1; i++)
+        {
+            for(j = i + 1; j < list.size(); j++)
+            {
+                String jItem = list.get(j).getTheName();
+                String iItem = list.get(i).getTheName();
+                if (jItem.compareTo(iItem) < 0) {
+                    InventoryItem temp = list.get(i);
+                    list.set(i, list.get(j));
+                    list.set(j, temp);
+                }
+            }
+        }
+    }
+
+    @FXML
+    public void searchSerial(Event e)
+    {
+        String curSearch = searchSerial.getText();
+        this.theDisplayTextArea.setText("");
+        int theSerialCount = 0;
+        ObservableList<InventoryItem> allInventoryItems = table.getItems();
+        InventoryItem found = new InventoryItem();
+        for(InventoryItem p : allInventoryItems)
+        {
+           if(p.getTheSerial().equals(curSearch))
+           {
+               theSerialCount++;
+               found = p;
+           }
+        }
+        if(theSerialCount == 0)
+        {
+            theDisplayTextArea.setText("THE SERIAL NUMBER " + curSearch + " WAS NOT FOUND IN YOUR INVENTORY! PLEASE TRY A DIFFERENT SERIAL NUMBER!!!");
+        }
+        else {
+            theDisplayTextArea.setText("the serial number " + curSearch + " was found in your inventory\n" + found.toString() );
+        }
+    }
+
+    @FXML
+    public void searchName(Event e)
+    {
+        String curSearch = searchName.getText();
+        this.theDisplayTextArea.setText("");
+        int theNameCount = 0;
+        ObservableList<InventoryItem> allInventoryItems = table.getItems();
+        InventoryItem found = new InventoryItem();
+        for(InventoryItem p : allInventoryItems)
+        {
+            if(p.getTheName().equals(curSearch))
+            {
+                theNameCount++;
+                found = p;
+            }
+        }
+        if(theNameCount == 0)
+        {
+            theDisplayTextArea.setText("THE NAME " + curSearch + " WAS NOT FOUND IN YOUR INVENTORY! PLEASE TRY A DIFFERENT NAME!!!");
+        }
+        else {
+            theDisplayTextArea.setText("the name " + curSearch + " was found in your inventory\n" + found.toString() );
+        }
+    }
+
+    @FXML
+    public void saveInventoryTSV(Event event){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Dialog");
+        fileChooser.setInitialFileName("mysave");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text file", "*.txt"));
+        File selectedFile = null;
+        while(selectedFile== null){
+            selectedFile = fileChooser.showSaveDialog(null);
+        }
+
+        File file = new File(String.valueOf(selectedFile));
+        PrintWriter outFile = null;
+        try {
+            outFile = new PrintWriter(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        for(int i = 0; i < table.getItems().size(); i++){
+            outFile.println(table.getItems().get(i).toTab());
+        }
+        outFile.close();
+    }
+
+    @FXML
+    public void saveInventoryHTML(Event event){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Dialog");
+        fileChooser.setInitialFileName("mysave");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("html file", "*.html"));
+        File selectedFile = null;
+        while(selectedFile== null){
+            selectedFile = fileChooser.showSaveDialog(null);
+        }
+
+        File file = new File(String.valueOf(selectedFile));
+        PrintWriter outFile = null;
+        try {
+            outFile = new PrintWriter(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        ObservableList<InventoryItem> allInventoryItems;
+        allInventoryItems = table.getItems();
+        assert outFile != null;
+        outFile.write(" <tr bgcolor=\"yellow\">" + "<td>");
+        outFile.write("<html>" +
+                "<body>" +
+                "<table border ='1'>" +
+                "<tr>" +
+                "<td>Price</td>" +
+                "<td>Serial Number</td>" +
+                "<td>Name</td>" +
+                "</tr>");
+        for(InventoryItem p : allInventoryItems)
+        {
+            outFile.write("<html>" +
+                    "<body>" +
+                    "<table border ='1'>" +
+                    "<tr>" +
+                    "</tr>");
+            outFile.write(" <tr bgcolor=\"yellow\">" + "<td>");
+            outFile.write( "<td>");
+            outFile.write(p.getThePrice());
+            outFile.write("</td><td>");
+            outFile.write(p.getTheSerial() + "\t");
+            outFile.write("</td><td>");
+            outFile.write(p.getTheName() + "\t");
+            outFile.write("</table>" +
+                    "</body>" +
+                    "</html>");
+        }
+        outFile.close();
+    }
+
+    @FXML
+    public void saveInventoryJSON(Event event){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Dialog");
+        fileChooser.setInitialFileName("mysave");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("JSON file", "*.json"));
+        File selectedFile = null;
+        while(selectedFile== null){
+            selectedFile = fileChooser.showSaveDialog(null);
+        }
+
+        File file = new File(String.valueOf(selectedFile));
+        PrintWriter outFile = null;
+        try {
+            outFile = new PrintWriter(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        for(int i = 0; i < table.getItems().size(); i++){
+            outFile.println(table.getItems().get(i).toTab());
+        }
+        outFile.close();
+    }
+
+    public void loadInventory(Event e){
+        Window stage = vbMenu.getScene().getWindow();
+        fileChooser.setTitle("Load Dialog");
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text file", "*.txt"));
+        try {
+            File file = fileChooser.showOpenDialog(stage);
+            fileChooser.setInitialDirectory(file.getParentFile());
+            Scanner myReader = new Scanner(file);
+            list.clear();
+            try {
+                while (myReader.hasNextLine()) {
+                    String curLine = myReader.nextLine();
+                    String thePrice = extractPrice(curLine);
+                    String theSerial = extractSerial(curLine);
+                    String theName = extractName(curLine);
+                    InventoryItem theItem = new InventoryItem(thePrice, theSerial, theName);
+                    list.add(theItem);
+                    table.setItems(list);
+                    }
+                } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+        } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+        }
+
+    public String extractPrice(String curLine){
+        String thePrice = "";
+        int decimalCount = 0;
+        for (char c : curLine.toCharArray()) {
+            if (decimalCount > 0) {
+                decimalCount++;
+            }
+            if (c == '.') {
+                decimalCount = 1;
+            }
+            if(decimalCount == 4)
+            {
+                break;
+            }
+            thePrice += c;
+        }
+        return thePrice;
+    }
+
+    public String extractSerial(String curLine){
+        String theSerial = "";
+        int decimalCount = 0;
+        for (char c : curLine.toCharArray()) {
+            if (decimalCount > 0) {
+                decimalCount++;
+            }
+            if (c == '.') {
+                decimalCount = 1;
+            }
+            if(decimalCount > 4)
+            {
+                theSerial += c;
+            }
+            if(decimalCount == 14)
+            {
+                break;
+            }
+        }
+        return theSerial;
+    }
+
+    public String extractName(String curLine){
+        String theName = "";
+        int decimalCount = 0;
+        for (char c : curLine.toCharArray()) {
+            if(c == '\n')
+            {
+                break;
+            }
+            if (decimalCount > 0) {
+                decimalCount++;
+            }
+            if (c == '.') {
+                decimalCount = 1;
+            }
+            if(decimalCount > 14)
+            {
+                theName += c;
+            }
+        }
+        return theName;
+    }
+
+    public int searchForSerial(ObservableList<InventoryItem> list, String theSerial){
+        for( Object item : list)
+        {
+            int intIndex = item.toString().indexOf(theSerial);
+            if(intIndex != - 1)
+            {
+                return 2;
+            }
+        }
+            return 1;
     }
 
     public int checkSerialFormat(String theSerial){
         if(theSerial.length() == 10)
         {
-            return 2;
+            return 1;
         }
         else
         {
-            return 1;
+            return 2;
         }
     }
 
     public int checkNameLength(String theName){
         if(theName.length() >= 2 && theName.length() <= 256)
         {
-            return 2;
+            return 1;
         }
         else
         {
-            return 1;
+            return 2;
         }
     }
-
 
     public String makeDollar(String fixedPrice)
     {
@@ -331,15 +798,42 @@ public class InventoryManagerController implements Initializable {
     public void refresh()
     {
         // sets all the variables to a beginning form
-        price.setText(null);
-        serial.setText(null);
-        name.setText(null);
+        price.setText("");
+        serial.setText("");
+        name.setText("");
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        /*
+        priceInput = new TextField();
+        priceInput.setPromptText("price");
+        serial = new TextField();
+        serial.setPromptText("serial");
+        name = new TextField();
+        name.setPromptText("name");
+
+        priceColumn.setCellValueFactory(new PropertyValueFactory<InventoryItem, String>("price"));
+        priceColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        serialColumn.setCellValueFactory(new PropertyValueFactory<InventoryItem, String>("serial"));
+        serialColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        nameColumn.setCellValueFactory(new PropertyValueFactory<InventoryItem, String>("name"));
+        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+
+         */
+        priceColumn.setCellValueFactory(cellData -> cellData.getValue().priceProperty());
+        serialColumn.setCellValueFactory(cellData -> cellData.getValue().serialProperty());
+        nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
+        table.setItems(getProduct());
+      //  table.getColumns().addAll(priceColumn, serialColumn, nameColumn);  ??Keep?? idk
+       // table.getColumns().addAll(completeColumn, dateColumn, nameColumn);
         // gives the todolist program something to start off with
         //theDisplayTextArea.setText("ready");
+    }
+
+    private ObservableList<InventoryItem> getProduct() {
+        ObservableList<InventoryItem> thisList = InventoryManagerController.list;
+        return thisList;
     }
 /*
     public String addItemTest(String theList, String nameInput, String dateInput, boolean isComplete){

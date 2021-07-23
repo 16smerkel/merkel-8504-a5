@@ -1,48 +1,62 @@
 package ucf.assignments;
 
-public class InventoryItem {
-    public String thePrice;
-    public String theSerial;
-    public String theName;
+import javafx.beans.property.SimpleStringProperty;
 
-    public InventoryItem(){
-        this.thePrice = "$0.00";
-        this.theSerial = "XXXXXXXXX";
-        this.theName = "";
-    }
+import java.time.LocalDate;
+
+public class InventoryItem {
+    public SimpleStringProperty thePrice;
+    public SimpleStringProperty theSerial;
+    public SimpleStringProperty theName;
 
     public InventoryItem(String thePrice, String theSerial, String theName){
-        this.thePrice = thePrice;
-        this.theSerial = theSerial;
-        this.theName = theName;
+        this.thePrice = new SimpleStringProperty(thePrice);
+        this.theSerial = new SimpleStringProperty(theSerial);
+        this.theName = new SimpleStringProperty(theName);
+    }
+
+    public InventoryItem(){
+        this.thePrice = new SimpleStringProperty("");
+        this.theSerial = new SimpleStringProperty("");
+        this.theName = new SimpleStringProperty("");
     }
 
     public String getThePrice(){
+         return thePrice.get();
+    }
+    public SimpleStringProperty priceProperty() {
         return thePrice;
     }
-
     public void setThePrice(String thePrice){
-        this.thePrice = thePrice;
+        this.thePrice.set(thePrice);
     }
 
     public String getTheSerial(){
+        return theSerial.get();
+    }
+    public SimpleStringProperty serialProperty() {
         return theSerial;
     }
-
     public void setTheSerial(String theSerial){
-        this.theSerial = theSerial;
+        this.theSerial.set(theSerial);
     }
     public String getTheName(){
+        return theName.get();
+    }
+    public SimpleStringProperty nameProperty() {
         return theName;
     }
-
     public void setTheName(String theName){
-        this.theName = theName;
+        this.theName.set(theName);
     }
 
     @Override
     public String toString(){
-        return ("Price: " + thePrice + " Serial Number: " + theSerial + " Name: " + theName);
+        return ("Price: " + getThePrice() + " Serial Number: " + getTheSerial() + " Name: " + getTheName());
+    }
+
+    public String toTab(){
+        return (getThePrice() + "\t" + getTheSerial() + "\t" + getTheName());
     }
 
 }
