@@ -1,31 +1,25 @@
+/*
+ *  UCF COP3330 Summer 2021 Assignment 5 Solution
+ *  Copyright 2021 Sean Merkel
+ */
 package ucf.assignments;
 
-import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.fxml.Initializable;
 
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.stage.Window;
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.time.LocalDate;
 import java.util.*;
 
 public class InventoryManagerController implements Initializable {
@@ -174,13 +168,12 @@ public class InventoryManagerController implements Initializable {
             allInventoryItems.remove(Selected);
             list.add(theItem);
         }
-        //table.getItems().add(theItem);
         refresh();
     }
 
     @FXML
     public void editItemPrice(Event E){
-        // gets information from the three textfields (whichever ones were filled out) and edits chosen item
+        // gets information from the price textfield and edits chosen item
         this.theDisplayTextArea.setText("");
         ObservableList<InventoryItem> allInventoryItems;
         allInventoryItems = table.getItems();
@@ -198,7 +191,7 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void editItemSerial(Event E){
-        // gets information from the three textfields (whichever ones were filled out) and edits chosen item
+        // gets information from the serial textfield and edits chosen item
         this.theDisplayTextArea.setText("");
         ObservableList<InventoryItem> allInventoryItems;
         allInventoryItems = table.getItems();
@@ -231,7 +224,7 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void editItemName(Event E){
-        // gets information from the three textfields (whichever ones were filled out) and edits chosen item
+        // gets information from the name textfield and edits chosen item
         this.theDisplayTextArea.setText("");
         ObservableList<InventoryItem> allInventoryItems;
         allInventoryItems = table.getItems();
@@ -257,6 +250,8 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void sortPrice(Event e)
+    // sorts inventory from most expensive item to least expensive item
+    // removes $ and converts double to make the comparison process more precise
     {
         int i,j;
         for(i = 0; i < list.size() - 1; i++)
@@ -280,6 +275,7 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void sortSerial(Event e)
+    // sorts inventory by serial number alphabetically with the items with serial numbers starting with A being on top while the items with serial numbers with Z being on bottom
     {
         int i,j;
         for(i = 0; i < list.size() - 1; i++)
@@ -299,6 +295,7 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void sortName(Event e)
+    // sorts inventory by name alphabetically with the items with name starting with A being on top while the items with name with Z being on bottom
     {
         int i,j;
         for(i = 0; i < list.size() - 1; i++)
@@ -318,6 +315,8 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void searchSerial(Event e)
+    // goes through list to find item with desired serial number
+    // if serial number is in none of the items in the inventory it displays an error message
     {
         String curSearch = searchSerial.getText();
         this.theDisplayTextArea.setText("");
@@ -343,6 +342,8 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void searchName(Event e)
+    // goes through list to find item with desired name
+    // if name is in none of the items in the inventory it displays an error message
     {
         String curSearch = searchName.getText();
         this.theDisplayTextArea.setText("");
@@ -368,6 +369,9 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void saveInventoryTSV(Event event){
+    // opens up a window to be able save list into a text file
+    // text file is then converted from a list full of inventory items
+    // toTab() is used to make the items in the list into Strings that are properly spaced out
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Dialog");
         fileChooser.setInitialFileName("mysave");
@@ -392,6 +396,9 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void saveInventoryHTML(Event event){
+    // opens up a window to be able save list into a text file
+    // HTML file is then converted from a list full of inventory items
+    // <table border> is key to making html file a table format
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Dialog");
         fileChooser.setInitialFileName("mysave");
@@ -443,6 +450,9 @@ public class InventoryManagerController implements Initializable {
 
     @FXML
     public void saveInventoryJSON(Event event){
+    // opens up a window to be able save list into a text file
+    // JSON file is then converted from a list full of inventory items
+    // toTab() is used to make the items in the list into Strings that are properly spaced out
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Dialog");
         fileChooser.setInitialFileName("mysave");
@@ -466,6 +476,9 @@ public class InventoryManagerController implements Initializable {
     }
 
     public void loadInventory(Event e){
+        // opens up a window to be able load a text file
+        // text file is then converted into a list full of inventory items
+        // extractPrice, extractSerial, and extractName are key to creating each item in the observable list that is being loaded
         Window stage = vbMenu.getScene().getWindow();
         fileChooser.setTitle("Load Dialog");
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text file", "*.txt"));
@@ -493,6 +506,7 @@ public class InventoryManagerController implements Initializable {
         }
 
     public String extractPrice(String curLine){
+        // searches through the current line to take out the specific location of the price
         String thePrice = "";
         int decimalCount = 0;
         for (char c : curLine.toCharArray()) {
@@ -512,6 +526,7 @@ public class InventoryManagerController implements Initializable {
     }
 
     public String extractSerial(String curLine){
+        // searches through the current line to take out the specific location of the serial number
         String theSerial = "";
         int decimalCount = 0;
         for (char c : curLine.toCharArray()) {
@@ -534,6 +549,7 @@ public class InventoryManagerController implements Initializable {
     }
 
     public String extractName(String curLine){
+        // searches through the current line to take out the specific location of the name
         String theName = "";
         int decimalCount = 0;
         for (char c : curLine.toCharArray()) {
@@ -556,6 +572,7 @@ public class InventoryManagerController implements Initializable {
     }
 
     public int searchForSerial(ObservableList<InventoryItem> list, String theSerial){
+        // goes through list to make sure an item is not in the list with the same serial number
         for( Object item : list)
         {
             int intIndex = item.toString().indexOf(theSerial);
@@ -568,6 +585,7 @@ public class InventoryManagerController implements Initializable {
     }
 
     public int checkSerialFormat(String theSerial){
+        // checks to see if serial number is in XXXXXXXXXX format
         if(theSerial.length() == 10)
         {
             return 1;
@@ -579,6 +597,7 @@ public class InventoryManagerController implements Initializable {
     }
 
     public int checkNameLength(String theName){
+        // checks to see if length of name is between 2 and 256
         if(theName.length() >= 2 && theName.length() <= 256)
         {
             return 1;
@@ -590,6 +609,7 @@ public class InventoryManagerController implements Initializable {
     }
 
     public String makeDollar(String fixedPrice)
+            // edits price input to have a dollar sign and at least zero cents if no decimal is entered
     {
         int intIndex = fixedPrice.indexOf("$");
         if(intIndex == - 1) {
@@ -601,200 +621,7 @@ public class InventoryManagerController implements Initializable {
         }
         return fixedPrice;
     }
-/*
-    @FXML
-    public void markComplete(Event e) {
-        isComplete.setSelected(true);
-        // go to item's boolean complete and make it true
-        // fix screen to display checkmark under complete column
-    }
 
-    @FXML
-    public void getHelp(Event e) {
-        Stage secondStage = new Stage();
-        secondStage.setScene(new Scene(new AnchorPane(new Label("TodoListHelp.fxml"))));
-        secondStage.show();
-        // opens a stage with help text
-    }
-
-    @FXML
-    public void displayAll(Event e) {
-        String allString = "";
-        for( Object item : list)
-        {
-            String curString = String.format("%s%n\n", item);
-            allString += curString;
-        }
-        this.theDisplayTextArea.setText(allString);
-        // adds each item to one big string of items
-        // displays the big string in the right side of the application
-    }
-
-    @FXML
-    public void displayIncomplete(Event e) {
-        String incompleteString = "";
-        for( Object item : list)
-        {
-            String curString = String.format("%s%n\n", item);
-            if(curString.contains("Not Completed"))
-            {
-                incompleteString += curString;
-            }
-        }
-        this.theDisplayTextArea.setText(incompleteString);
-        // goes through every item in list
-        // if marked incomplete it is converted to a string and to one big string of incompleted items
-        // displays the big string in the right side of the application
-    }
-
-    @FXML
-    public void displayComplete(Event e) {
-        String CompleteString = "";
-        for( Object item : list)
-        {
-            String curString = String.format("%s%n\n", item);
-            if(!(curString.contains("Not Completed")))
-            {
-                CompleteString += curString;
-            }
-        }
-        this.theDisplayTextArea.setText(CompleteString);
-        // goes through every item in list
-        // if marked complete it is converted to a string and to one big string of completed items
-        // displays the big string in the right side of the application
-    }
-
-    @FXML
-    public void saveItems(Event event){
-        // opens up a window to be able save list into a text file
-        // text file is then converted from a list full of todolist items
-        // toString() is used to make the items in the list into Strings
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Dialog");
-        fileChooser.setInitialFileName("mysave");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text file", "*.txt"));
-        File selectedFile = null;
-        while(selectedFile== null){
-            selectedFile = fileChooser.showSaveDialog(null);
-        }
-
-        File file = new File(String.valueOf(selectedFile));
-        PrintWriter outFile = null;
-        try {
-            outFile = new PrintWriter(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        outFile.println("Your Todo List");
-        for(int i = 0; i < itemList.getItems().size(); i++){
-            outFile.println(itemList.getItems().get(i).toString());
-        }
-        outFile.close();
-    }
-
-    @FXML
-    public void loadItems(Event e) {
-        // opens up a window to be able load a text file
-        // text file is then converted into a list full of todolist items
-        // extractTitle, extractDueDate, and extractCompletion are key to creating each item in the observable list that is being loaded
-        Window stage = vbMenu.getScene().getWindow();
-        fileChooser.setTitle("Load Dialog");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text file", "*.txt"));
-        try {
-            File file = fileChooser.showOpenDialog(stage);
-            fileChooser.setInitialDirectory(file.getParentFile());
-            Scanner myReader = new Scanner(file);
-            list.clear();
-            try {
-                while (myReader.hasNextLine()) {
-                    String theTitle = "", firstDueDate = "";
-                    int completeNum = -1;
-                    String curLine = myReader.nextLine();
-                    completeNum = extractCompletion(curLine);
-                    firstDueDate = extractDueDate(curLine);
-                    theTitle = extractTitle(curLine);
-                    if(completeNum == 0)
-                    {
-                        TodoListItem theItem = new TodoListItem(theTitle, LocalDate.parse(firstDueDate), true, "Completed");
-                        list.add(theItem);
-                        itemList.setItems(list);
-                    }
-                    else if(completeNum == 1)
-                    {
-                        TodoListItem theItem = new TodoListItem(theTitle, LocalDate.parse(firstDueDate), false, "Not Completed");
-                        list.add(theItem);
-                        itemList.setItems(list);
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-            } catch (Exception exception) {
-                exception.printStackTrace();
-            }
-        } catch (FileNotFoundException fileNotFoundException) {
-            fileNotFoundException.printStackTrace();
-        }
-    }
-
-    public int extractCompletion(String curLine){
-        // searches for the word Not Completed or Completed to determine the current line's completion status
-        int theCompletionCheck = -1;
-        int intIndex = curLine.indexOf("Not Completed");
-        if(intIndex == - 1) {
-            int comIndex = curLine.indexOf("Completed");
-            if(comIndex == - 1) {
-                theCompletionCheck = -2; // Neither
-            } else {
-                theCompletionCheck = 1;  // Completed
-            }
-        } else {
-            theCompletionCheck = 0;  // Not Completed
-        }
-        return theCompletionCheck;
-    }
-
-    public String extractDueDate(String curLine) {
-        // searches through the current line to take out the specific location of the due date
-        String firstDueDate = "";
-        int dueDateCounter = 0;
-        for (char c : curLine.toCharArray()) {
-            if (Character.isDigit(c) || c == '-') {
-                firstDueDate += c;
-                dueDateCounter++;
-            }
-            if (dueDateCounter == 10) {
-                break;
-            }
-        }
-        return firstDueDate;
-    }
-
-    public String extractTitle(String curLine){
-        // searches through the current line to take out the specific location of the task description
-        String theTitle = "";
-        int dueDateCounter = 0;
-        for (char c : curLine.toCharArray()) {
-            if (Character.isDigit(c) || c == '-') {
-                dueDateCounter++;
-            }
-            if (dueDateCounter >= 12) {
-                if (c != '.') {
-                    theTitle += c;
-                }
-            }
-
-            if (dueDateCounter >= 10) {
-                dueDateCounter = dueDateCounter + 1; // skip the space between due date and task description
-            }
-            if (c == '.') {
-                break;
-            }
-        }
-        return theTitle;
-    }
-*/
     public void refresh()
     {
         // sets all the variables to a beginning form
@@ -805,278 +632,137 @@ public class InventoryManagerController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        /*
-        priceInput = new TextField();
-        priceInput.setPromptText("price");
-        serial = new TextField();
-        serial.setPromptText("serial");
-        name = new TextField();
-        name.setPromptText("name");
-
-        priceColumn.setCellValueFactory(new PropertyValueFactory<InventoryItem, String>("price"));
-        priceColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        serialColumn.setCellValueFactory(new PropertyValueFactory<InventoryItem, String>("serial"));
-        serialColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-        nameColumn.setCellValueFactory(new PropertyValueFactory<InventoryItem, String>("name"));
-        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-
-         */
+        // create table to view list of inventory
         priceColumn.setCellValueFactory(cellData -> cellData.getValue().priceProperty());
         serialColumn.setCellValueFactory(cellData -> cellData.getValue().serialProperty());
         nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
         table.setItems(getProduct());
-      //  table.getColumns().addAll(priceColumn, serialColumn, nameColumn);  ??Keep?? idk
-       // table.getColumns().addAll(completeColumn, dateColumn, nameColumn);
-        // gives the todolist program something to start off with
-        //theDisplayTextArea.setText("ready");
     }
 
     private ObservableList<InventoryItem> getProduct() {
         ObservableList<InventoryItem> thisList = InventoryManagerController.list;
         return thisList;
     }
-/*
-    public String addItemTest(String theList, String nameInput, String dateInput, boolean isComplete){
+
+    public String addItemTest(String theList, String priceInput, String serialInput, String nameInput){
         // gets information from textfield, datepicker, and checkbox and creates new item
         // adds item to the list
-        TodoListItem theItem = new TodoListItem();
-        theItem.setTitle(nameInput);
-        theItem.setDueDate(LocalDate.parse(dateInput));
-        if(isComplete == true)
-        {
-            theItem.setCompletionCheck("Completed");
-        }
-        else
-        {
-            theItem.setCompletionCheck("Not completed");
-        }
+        InventoryItem theItem = new InventoryItem();
+        theItem.setThePrice(priceInput);
+        theItem.setTheSerial(serialInput);
+        theItem.setTheName(nameInput);
         theList += theItem.toString();
         return theList;
     }
 
-    public String deleteItemTest(String theList, String nameInput, String dateInput, boolean isComplete){
+    public String deleteItemTest(String theList, String priceInput, String serialInput, String nameInput){
         // removes the selected item from list
-        TodoListItem theItem = new TodoListItem();
-        theItem.setTitle(nameInput);
-        theItem.setDueDate(LocalDate.parse(dateInput));
-        if(isComplete == true)
-        {
-            theItem.setCompletionCheck("Completed");
-        }
-        else
-        {
-            theItem.setCompletionCheck("Not completed");
-        }
-        theList = theList.replaceAll(theItem.toString(), "");
+        InventoryItem theItem = new InventoryItem();
+        theItem.setThePrice(priceInput);
+        theItem.setTheSerial(serialInput);
+        theItem.setTheName(nameInput);
+        theList = theList.replace(theItem.toString(), "");
         return theList;
     }
 
-    public String editItemTest(String theList, String nameInput, String dateInput, boolean isComplete, String newName, String newDate, boolean newComplete){
+    public String editItemTest(String theList, String priceInput, String serialInput, String nameInput, String newPriceInput, String newSerialInput, String newNameInput){
         // searches for the item in the list and then edits it to the user's liking
         // first item input information is what is being edited and second item input information is the new edit
-        TodoListItem theItem = new TodoListItem();
-        theItem.setTitle(nameInput);
-        theItem.setDueDate(LocalDate.parse(dateInput));
-        if(isComplete == true)
-        {
-            theItem.setCompletionCheck("Completed");
-        }
-        else
-        {
-            theItem.setCompletionCheck("Not completed");
-        }
-        TodoListItem newItem = new TodoListItem();
-        newItem.setTitle(newName);
-        newItem.setDueDate(LocalDate.parse(newDate));
-        if(newComplete == true)
-        {
-            newItem.setCompletionCheck("Completed");
-        }
-        else
-        {
-            newItem.setCompletionCheck("Not completed");
-        }
-        theList = theList.replaceAll(theItem.toString(), newItem.toString());
+        InventoryItem theItem = new InventoryItem();
+        theItem.setThePrice(priceInput);
+        theItem.setTheSerial(serialInput);
+        theItem.setTheName(nameInput);
+        InventoryItem newItem = new InventoryItem();
+        newItem.setThePrice(newPriceInput);
+        newItem.setTheSerial(newSerialInput);
+        newItem.setTheName(newNameInput);
+        theList = theList.replace(theItem.toString(), newItem.toString());
         return theList;
     }
 
-    public String clearAllTest(String theList) {
-        // clears the list
-        theList = "";
+    public String editItemPriceTest(String theList, String priceInput, String serialInput, String nameInput, String newPriceInput){
+        // searches for the item in the list and then edits it to the user's liking
+        // first item input information is what is being edited and second item input information is the new edit
+        InventoryItem theItem = new InventoryItem();
+        theItem.setThePrice(priceInput);
+        theItem.setTheSerial(serialInput);
+        theItem.setTheName(nameInput);
+        InventoryItem newItem = new InventoryItem();
+        newItem.setThePrice(newPriceInput);
+        newItem.setTheSerial(serialInput);
+        newItem.setTheName(nameInput);
+        theList = theList.replace(theItem.toString(), newItem.toString());
         return theList;
     }
 
-    public int isItemComplete(String nameInput, String dateInput, boolean isComplete){
-        // returns 1 if item is completed and returns 0 if item is incompleted
-        TodoListItem theItem = new TodoListItem();
-        theItem.setTitle(nameInput);
-        theItem.setDueDate(LocalDate.parse(dateInput));
-        if(isComplete == true)
+    public String editItemSerialTest(String theList, String priceInput, String serialInput, String nameInput, String newSerialInput){
+        // searches for the item in the list and then edits it to the user's liking
+        // first item input information is what is being edited and second item input information is the new edit
+        InventoryItem theItem = new InventoryItem();
+        theItem.setThePrice(priceInput);
+        theItem.setTheSerial(serialInput);
+        theItem.setTheName(nameInput);
+        InventoryItem newItem = new InventoryItem();
+        newItem.setThePrice(priceInput);
+        newItem.setTheSerial(newSerialInput);
+        newItem.setTheName(nameInput);
+        theList = theList.replace(theItem.toString(), newItem.toString());
+        return theList;
+    }
+
+    public String editItemNameTest(String theList, String priceInput, String serialInput, String nameInput, String newNameInput){
+        // searches for the item in the list and then edits it to the user's liking
+        // first item input information is what is being edited and second item input information is the new edit
+        InventoryItem theItem = new InventoryItem();
+        theItem.setThePrice(priceInput);
+        theItem.setTheSerial(serialInput);
+        theItem.setTheName(nameInput);
+        InventoryItem newItem = new InventoryItem();
+        newItem.setThePrice(priceInput);
+        newItem.setTheSerial(serialInput);
+        newItem.setTheName(newNameInput);
+        theList = theList.replace(theItem.toString(), newItem.toString());
+        return theList;
+    }
+
+    public int saveAsTSV(String file)
+    // checks to make sure correct TSV file was selected to be saved successfully
+    {
+        if(file.equals("TSV"))
         {
             return 1;
         }
-        else
+        return 2;
+    }
+
+    public int saveAsHTML(String file)
+    // checks to make sure correct HTML file was selected to be saved successfully
+    {
+        if(file.equals("HTML"))
         {
-            return 0;
+            return 1;
         }
+        return 2;
     }
 
-    @FXML
-    public void addListButtonClicked(ActionEvent actionEvent) {
-        // clear current page
-        // ask for title of new list
-        // create new list with the new title
+    public int saveAsJSON(String file)
+    // checks to make sure correct JSON file was selected to be saved successfully
+    {
+        if(file.equals("JSON"))
+        {
+            return 1;
+        }
+        return 2;
     }
 
-    @FXML
-    public void removeListButtonClicked(ActionEvent actionEvent) {
-        // clear current page
-        // delete the title from the collection of todolist
-        // return to previous todolist
+    public int loadSuccess(String file)
+    // checks to make sure correct file was processed and loaded successfully
+    {
+        if(file.equals("TSV") || file.equals("HTML") || file.equals("JSON"))
+        {
+            return 1;
+        }
+        return 2;
     }
 
-    @FXML
-    public void editTitleButtonClicked(ActionEvent actionEvent) {
-        // delete current title of todolist
-        // ask for updated title from user
-        // return the new title entered by the user
-    }
-
-    @FXML
-    public void addItemButtonClicked(ActionEvent actionEvent) {
-        // prints in terminal not display?
-        //label.setText("Hello World");
-        // go to final item on list and open a new spot
-        // ask user for due date and task description
-        // create new item with information inputted from the user
-        // place new item underneath previous item on screen
-    }
-
-    @FXML
-    public void removeItemButtonClicked(ActionEvent actionEvent) {
-        // clear current line containing item on screen
-        // delete the item from the collection of todolist
-        // move up to the item above
-    }
-
-    @FXML
-    public void editDescriptionButtonClicked(ActionEvent actionEvent) {
-        // clear current description
-        // ask for description of new item
-        // create new list with the new title
-    }
-
-    @FXML
-    public void editDueDateButtonClicked(ActionEvent actionEvent) {
-        // clear current due date
-        // ask for due date of new item
-        // create new list with the new title
-    }
-
-    @FXML
-    public void markCompleteButtonClicked(ActionEvent actionEvent) {
-        // go to item's boolean complete and make it true
-        // fix screen to display checkmark under complete column
-    }
-
-    @FXML
-    public void displayAllItemsButtonClicked(ActionEvent actionEvent) {
-        // create a new screen
-        // print every item
-    }
-
-    @FXML
-    public void displayIncompleteItemsButtonClicked(ActionEvent actionEvent) {
-        // go item by item to check if boolean complete is marked false
-        // create a new screen
-        // print every item marked false
-    }
-
-    @FXML
-    public void displayCompleteItemsButtonClicked(ActionEvent actionEvent) {
-        // go item by item to check if boolean complete is marked true
-        // create a new screen
-        // print every item marked true
-    }
-
-    @FXML
-    public void saveItemsSingleListButtonClicked(ActionEvent actionEvent) {
-        // save each item in the one list
-        // research how to save in javafx
-    }
-
-    @FXML
-    public void saveItemsAllListButtonClicked(ActionEvent actionEvent) {
-        // save each item in the list
-        // go to the next list and repeat process until every list is saved
-    }
-
-    @FXML
-    public void loadSingleListButtonClicked(ActionEvent actionEvent) {
-        // ask user for name of list they want
-        // go one by one through all the todolist until a title matches the user's input
-    }
-
-    @FXML
-    public void loadMultipleListsButtonClicked(ActionEvent actionEvent) {
-        // ask user for name of list they want
-        // go one by one through all the todolist until a title matches the user's input
-        // repeat process until every list user has inputted has been found
-    }
-
-    public void addListLen() {
-        // number of todolist should increase by one
-    }
-
-    public void subtractListLen() {
-        // number of todolist should decrease by one
-    }
-
-    public void newTitleCheck() {
-        // actual should equal the user's input for the title
-    }
-
-    public void addItemLen() {
-        // number of todolistitem should increase by one
-    }
-
-    public void subtractItemLen() {
-        // number of todolistitem should decrease by one
-    }
-
-    public void newDescriptionCheck() {
-        // actual should equal the user's input for the description
-    }
-
-    public void newDueDateCheck() {
-        // actual should equal the user's input for the due date
-    }
-
-    public void isCompleteCheck() {
-        // check if the boolean complete in item is true
-    }
-
-    public void isIncompleteCheck(){
-        // check if the boolean complete in item is false
-    }
-
-    public void didItemInOneListSave(){
-        // return 1 if every list item successfully saved
-    }
-
-    public void didItemInEveryListSave(){
-        // return 1 if every list item successfully saved
-        // go to the next list and repeat process
-        // end entire process by returning 0 if item didnt save
-    }
-
-    public void loadTitle(){
-        // check if the user's input equals the actual
-    }
-
-    public void loadMultipleTitles(){
-        // check if every title in the user's input equals the actual
-    }
-
- */
 }
